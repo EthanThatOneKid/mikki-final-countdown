@@ -7,66 +7,307 @@
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
-    font-family: Georgia, serif;
+    font-family: "Segoe UI", "Comic Sans MS", cursive, sans-serif;
+    background:
+      radial-gradient(circle at 20% 20%, rgba(255,255,255,0.06) 0 2px, transparent 3px),
+      radial-gradient(circle at 70% 45%, rgba(255,255,255,0.05) 0 2px, transparent 3px),
+      linear-gradient(180deg, #2f4858 0%, #1d2d36 100%);
+    color: #fdf6e3;
+    min-height: 100vh;
+    padding-bottom: 40px;
+  }
+
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: rgba(29, 45, 54, 0.95);
+    border-bottom: 4px solid #d8a000;
+    text-align: center;
+    padding: 14px 16px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+  }
+  h1 {
+    font-size: 1.7rem;
+    letter-spacing: 1px;
+    color: #fff;
+    text-shadow: 0 2px 0 #d8a000, 0 0 12px rgba(255, 208, 0, 0.35);
+  }
+  .subtitle { font-style: italic; color: #e8d9a0; margin-top: 2px; font-size: .95rem; }
+  .countdown {
+    margin-top: 8px;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #ffd93d;
+  }
+  .countdown small { display: block; font-size: .7rem; color: #b8c9d0; font-weight: 400; text-transform: uppercase; letter-spacing: 2px; }
+
+  .legend {
     display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    justify-content: center;
+    max-width: 1000px;
+    margin: 18px auto 4px;
+    padding: 0 16px;
+    font-size: .8rem;
+    color: #d7e2e8;
+  }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .swatch {
+    width: 16px; height: 16px; border-radius: 4px;
+    display: inline-block;
+    box-shadow: inset 0 -2px 0 rgba(0,0,0,.2);
+  }
+
+  .map {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+    gap: 10px;
+    max-width: 1000px;
+    margin: 10px auto 0;
+    padding: 0 20px;
+  }
+
+  .tile {
+    aspect-ratio: 1;
+    border-radius: 14px;
+    display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 100vh;
-    background: linear-gradient(180deg, #ffd166 0%, #f4a261 100%);
-    color: #2b2d42;
-    text-align: center;
-    padding: 20px;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 2px 3px rgba(0,0,0,.35);
+    box-shadow: inset 0 -5px 0 rgba(0,0,0,.18), 0 5px 10px rgba(0,0,0,.28);
+    position: relative;
+    user-select: none;
   }
-  .card {
-    background: rgba(255, 255, 255, 0.92);
-    border-radius: 20px;
-    padding: 48px 56px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-    max-width: 640px;
+  .tile .day { font-size: 1.45rem; line-height: 1.1; }
+  .tile .mon { font-size: .62rem; text-transform: uppercase; letter-spacing: 1px; opacity: .9; }
+
+  .tile.cleared {
+    filter: grayscale(.75) brightness(.85);
+    opacity: .5;
+    box-shadow: none;
   }
-  h1 { font-size: 2.2rem; margin-bottom: 12px; }
-  .subtitle { font-size: 1.1rem; font-style: italic; margin-bottom: 32px; color: #555; }
-  .days { font-size: 6rem; font-weight: bold; color: #e63946; line-height: 1; }
-  .days-label { font-size: 1.3rem; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 24px; }
-  .details { font-size: 1rem; color: #555; margin-top: 24px; }
-  .details span { display: block; margin-top: 4px; }
+  .tile.cleared::after {
+    content: "✓";
+    position: absolute;
+    top: 2px; right: 6px;
+    font-size: .8rem;
+    color: rgba(255,255,255,.9);
+  }
+
+  .tile.active {
+    animation: pulse 1.2s ease-in-out infinite;
+    border: 3px solid #fff;
+    box-shadow: 0 0 24px 6px rgba(255, 255, 255, 0.85);
+    z-index: 2;
+    transform: scale(1.05);
+  }
+  .tile.active .pin { position: absolute; top: -14px; font-size: 1.1rem; }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1.05); }
+    50% { transform: scale(1.12); }
+  }
+
+  .tile.holiday {
+    background: linear-gradient(180deg, #ffd700 0%, #ff9d00 100%);
+    color: #6b3d00;
+    text-shadow: none;
+    box-shadow: inset 0 -5px 0 rgba(0,0,0,.18), 0 5px 10px rgba(255, 170, 0, .25);
+    gap: 2px;
+  }
+  .tile.holiday .icon { font-size: 1.5rem; line-height: 1; }
+  .tile.holiday .name { font-size: .62rem; text-align: center; line-height: 1.1; padding: 0 3px; }
+  .tile.holiday .off { font-size: .55rem; text-transform: uppercase; letter-spacing: 1px; opacity: .7; font-weight: 700; }
+
+  .tile.summer {
+    background: radial-gradient(circle at 30% 30%, #fff3a0, #ffd93d 45%, #ff9d00);
+    color: #7a4a00;
+    text-shadow: none;
+    box-shadow: 0 0 30px 6px rgba(255, 215, 0, .5), inset 0 -5px 0 rgba(0,0,0,.15);
+  }
+  .tile.summer .icon { font-size: 2rem; }
+
+  @media (max-width: 600px) {
+    .map { grid-template-columns: repeat(auto-fill, minmax(56px, 1fr)); gap: 7px; }
+    h1 { font-size: 1.3rem; }
+    .tile .day { font-size: 1.1rem; }
+  }
 </style>
 </head>
 <body>
-  <div class="card">
+  <header>
     <h1>Mrs. Davidson's Final Countdown</h1>
-    <p class="subtitle">Last year before retirement</p>
-    <div class="days" id="days">--</div>
-    <div class="days-label">days until summer</div>
-    <div class="details">
-      <span id="date-text"></span>
-      <span id="message"></span>
-    </div>
+    <p class="subtitle">Last year before retirement · GGUSD 2026–2027</p>
+    <div class="countdown" id="countdown">--</div>
+  </header>
+
+  <div class="legend">
+    <span><i class="swatch" style="background:#5c6a72"></i> Cleared</span>
+    <span><i class="swatch" style="background:#fff; box-shadow:0 0 8px #fff"></i> Today</span>
+    <span><i class="swatch" style="background:#4fc3f7"></i> Upcoming</span>
+    <span><i class="swatch" style="background:#ffd700"></i> No School</span>
+    <span><i class="swatch" style="background:radial-gradient(circle at 30% 30%, #fff3a0, #ffd93d 45%, #ff9d00)"></i> Summer!</span>
   </div>
 
+  <div class="map" id="map"></div>
+
 <script>
-  const targetDate = new Date("2027-05-25T00:00:00");
+  const YEAR_START = "2026-08-10";
+  const YEAR_END = "2027-05-25";
 
-  function update() {
-    const now = new Date();
-    const diff = targetDate - now;
-    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+  const HOLIDAYS = [
+    { name: "Labor Day",        start: "2026-09-07",  end: "2026-09-07",  icon: "🏈" },
+    { name: "Student Holiday",  start: "2026-10-30",  end: "2026-10-30",  icon: "🎃" },
+    { name: "Veterans Day",     start: "2026-11-11",  end: "2026-11-11",  icon: "🇺🇸" },
+    { name: "Thanksgiving",     start: "2026-11-23",  end: "2026-11-27",  icon: "🦃" },
+    { name: "Winter Break",     start: "2026-12-21",  end: "2027-01-04",  icon: "❄️" },
+    { name: "MLK Jr. Day",      start: "2027-01-18",  end: "2027-01-18",  icon: "🕊️" },
+    { name: "Lincoln's Bday",   start: "2027-02-12",  end: "2027-02-12",  icon: "🎩" },
+    { name: "Presidents' Day",  start: "2027-02-15",  end: "2027-02-15",  icon: "🏛️" },
+    { name: "Spring Break",     start: "2027-03-15",  end: "2027-03-19",  icon: "🌸" }
+  ];
 
-    document.getElementById("days").textContent = days > 0 ? days : 0;
+  const MONTH_COLORS = {
+    8:  ["#ff6b6b", "#ee5a24"],
+    9:  ["#ffa502", "#e67e22"],
+    10: ["#a55eea", "#8e44ad"],
+    11: ["#d37a3a", "#a0501a"],
+    12: ["#4fc3f7", "#0288d1"],
+    1:  ["#26c6da", "#00897b"],
+    2:  ["#f06292", "#d81b60"],
+    3:  ["#66bb6a", "#388e3c"],
+    4:  ["#ffee58", "#f9a825"],
+    5:  ["#ff7043", "#e64a19"]
+  };
 
-    const dateText = "Summer begins: " + targetDate.toLocaleDateString("en-US", {
-      weekday: "long", year: "numeric", month: "long", day: "numeric"
-    });
-    document.getElementById("date-text").textContent = dateText;
+  const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
-    document.getElementById("message").textContent =
-      days > 0
-        ? "You've got this, Mrs. Davidson!"
-        : "Happy retirement, Mrs. Davidson!";
+  function parse(d) { const [y, m, day] = d.split("-").map(Number); return new Date(Date.UTC(y, m - 1, day)); }
+  function key(d) { return d.toISOString().slice(0, 10); }
+  function weekday(d) { return d.getUTCDay(); }
+
+  function isHoliday(d) {
+    const k = key(d);
+    for (const h of HOLIDAYS) {
+      if (k >= h.start && k <= h.end) return h;
+    }
+    return null;
   }
 
-  update();
-  setInterval(update, 60000);
+  function buildTiles() {
+    const tiles = [];
+    const cursor = parse(YEAR_START);
+    const end = parse(YEAR_END);
+
+    while (cursor <= end) {
+      const dow = weekday(cursor);
+      if (dow === 0 || dow === 6) { cursor.setUTCDate(cursor.getUTCDate() + 1); continue; }
+
+      const h = isHoliday(cursor);
+      if (h) {
+        tiles.push({ type: "holiday", name: h.name, icon: h.icon, date: key(cursor) });
+        cursor.setUTCDate(cursor.getUTCDate() + 1);
+        continue;
+      }
+
+      tiles.push({ type: "day", date: key(cursor) });
+      cursor.setUTCDate(cursor.getUTCDate() + 1);
+    }
+
+    tiles.push({ type: "summer", icon: "☀️" });
+    return tiles;
+  }
+
+  function tileFor(today, start, end) {
+    const k = key(today);
+
+    if (k < YEAR_START) {
+      return { tile: "start", label: "First day!" };
+    }
+    if (k > YEAR_END) {
+      return { tile: "done", label: "Retired!" };
+    }
+
+    if (weekday(today) !== 0 && weekday(today) !== 6 && !isHoliday(today)) {
+      return { tile: k };
+    }
+
+    for (const t of tiles) {
+      if (t.type === "day" && t.date > k) return { tile: t.date, label: "Next up" };
+      if (t.type === "holiday" && t.date > k) return { tile: "holiday:" + t.date, label: "Break!" };
+    }
+    return { tile: "start", label: "First day!" };
+  }
+
+  const tiles = buildTiles();
+
+  function render() {
+    const today = new Date();
+    const target = parse(YEAR_END);
+
+    const countdown = document.getElementById("countdown");
+    const diff = target - today;
+    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+    countdown.innerHTML = (days > 0 ? days : 0) + " days until summer" +
+      (days > 0 ? " <small>Mrs. Davidson's last year before retirement</small>" : " <small>Happy retirement, Mrs. Davidson! 🎉</small>");
+
+    const active = tileFor(today, parse(YEAR_START), target);
+    const map = document.getElementById("map");
+    map.innerHTML = "";
+
+    for (const t of tiles) {
+      const el = document.createElement("div");
+      el.className = "tile";
+
+      if (t.type === "day") {
+        const d = parse(t.date);
+        const [r, g] = MONTH_COLORS[d.getUTCMonth() + 1];
+        el.style.background = "linear-gradient(180deg, " + r + " 0%, " + g + " 100%)";
+        el.innerHTML = '<div class="day">' + d.getUTCDate() + '</div><div class="mon">' + MONTHS[d.getUTCMonth()] + '</div>';
+
+        if (t.date < key(today)) el.classList.add("cleared");
+        if (t.date === active.tile) {
+          el.classList.add("active");
+          el.innerHTML = '<span class="pin">📍</span>' + el.innerHTML;
+          const tag = document.createElement("div");
+          tag.className = "mon";
+          tag.style.color = "#ffe066";
+          tag.textContent = active.label || "Today";
+          el.appendChild(tag);
+        }
+        if (t.date === YEAR_END) el.title = "Last day of school";
+      }
+
+      if (t.type === "holiday") {
+        el.classList.add("holiday");
+        el.innerHTML = '<span class="icon">' + t.icon + '</span><span class="name">' + t.name + '</span><span class="off">No school</span>';
+        el.title = t.name + " · " + t.date;
+        if (t.date < key(today)) el.classList.add("cleared");
+        if (t.date === (active.tile && active.tile.split(":")[1])) {
+          el.classList.add("active");
+          el.innerHTML = '<span class="pin">📍</span>' + el.innerHTML;
+        }
+      }
+
+      if (t.type === "summer") {
+        el.classList.add("summer");
+        el.innerHTML = '<span class="icon">☀️</span><span class="name">Summer &amp; Retirement!</span>';
+        if (key(today) > YEAR_END) el.classList.add("active");
+      }
+
+      map.appendChild(el);
+    }
+
+    const activeEl = map.querySelector(".tile.active");
+    if (activeEl) activeEl.scrollIntoView({ block: "center" });
+  }
+
+  render();
+  setInterval(render, 60000);
 </script>
 </body>
 </html>
