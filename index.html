@@ -47,7 +47,7 @@
     flex-wrap: wrap;
     gap: 14px;
     justify-content: center;
-    max-width: 1000px;
+    max-width: 640px;
     margin: 18px auto 4px;
     padding: 0 16px;
     font-size: .8rem;
@@ -61,16 +61,23 @@
   }
 
   .map {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
-    gap: 10px;
-    max-width: 1000px;
-    margin: 10px auto 0;
-    padding: 0 20px;
+    position: relative;
+    margin: 10px auto 40px;
+    width: min(640px, 100%);
+  }
+  .map .trail { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .map .trail path {
+    fill: none;
+    stroke: rgba(255, 217, 61, 0.45);
+    stroke-width: 7;
+    stroke-linecap: round;
+    stroke-dasharray: 2 16;
   }
 
   .tile {
-    aspect-ratio: 1;
+    position: absolute;
+    width: 58px;
+    height: 58px;
     border-radius: 14px;
     display: flex;
     flex-direction: column;
@@ -80,11 +87,11 @@
     color: #fff;
     text-shadow: 0 2px 3px rgba(0,0,0,.35);
     box-shadow: inset 0 -5px 0 rgba(0,0,0,.18), 0 5px 10px rgba(0,0,0,.28);
-    position: relative;
+    overflow: hidden;
     user-select: none;
   }
-  .tile .day { font-size: 1.45rem; line-height: 1.1; }
-  .tile .mon { font-size: .62rem; text-transform: uppercase; letter-spacing: 1px; opacity: .9; }
+  .tile .day { font-size: 1.3rem; line-height: 1.1; }
+  .tile .mon { font-size: .58rem; text-transform: uppercase; letter-spacing: 1px; opacity: .9; }
 
   .tile.cleared {
     filter: grayscale(.75) brightness(.85);
@@ -104,12 +111,11 @@
     border: 3px solid #fff;
     box-shadow: 0 0 24px 6px rgba(255, 255, 255, 0.85);
     z-index: 2;
-    transform: scale(1.05);
   }
   .tile.active .pin { position: absolute; top: -14px; font-size: 1.1rem; }
   @keyframes pulse {
-    0%, 100% { transform: scale(1.05); }
-    50% { transform: scale(1.12); }
+    0%, 100% { transform: translate(-50%, -50%) scale(1) rotate(var(--rot, 0deg)); }
+    50% { transform: translate(-50%, -50%) scale(1.12) rotate(var(--rot, 0deg)); }
   }
 
   .tile.holiday {
@@ -117,24 +123,32 @@
     color: #6b3d00;
     text-shadow: none;
     box-shadow: inset 0 -5px 0 rgba(0,0,0,.18), 0 5px 10px rgba(255, 170, 0, .25);
-    gap: 2px;
+    gap: 1px;
   }
-  .tile.holiday .icon { font-size: 1.5rem; line-height: 1; }
-  .tile.holiday .name { font-size: .62rem; text-align: center; line-height: 1.1; padding: 0 3px; }
-  .tile.holiday .off { font-size: .55rem; text-transform: uppercase; letter-spacing: 1px; opacity: .7; font-weight: 700; }
+  .tile.holiday .icon { font-size: 1.35rem; line-height: 1; }
+  .tile.holiday .name { font-size: 8.5px; text-align: center; line-height: 1.15; padding: 0 3px; }
+  .tile.holiday .off { font-size: 7px; text-transform: uppercase; letter-spacing: 1px; opacity: .7; font-weight: 700; }
 
   .tile.summer {
     background: radial-gradient(circle at 30% 30%, #fff3a0, #ffd93d 45%, #ff9d00);
     color: #7a4a00;
     text-shadow: none;
-    box-shadow: 0 0 30px 6px rgba(255, 215, 0, .5), inset 0 -5px 0 rgba(0,0,0,.15);
+    border: 2px solid #fff;
+    box-shadow: 0 0 30px 6px rgba(255, 215, 0, .55), inset 0 -5px 0 rgba(0,0,0,.15);
   }
-  .tile.summer .icon { font-size: 2rem; }
+  .tile.summer .icon { font-size: 1.5rem; line-height: 1; }
+  .tile.summer .name { font-size: 8px; text-align: center; line-height: 1.15; padding: 0 3px; }
 
-  @media (max-width: 600px) {
-    .map { grid-template-columns: repeat(auto-fill, minmax(56px, 1fr)); gap: 7px; }
-    h1 { font-size: 1.3rem; }
-    .tile .day { font-size: 1.1rem; }
+  @media (max-width: 560px) {
+    .tile { width: 40px; height: 40px; border-radius: 10px; }
+    .tile .day { font-size: .95rem; }
+    .tile .mon { font-size: .45rem; }
+    .tile.holiday .icon { font-size: 1rem; }
+    .tile.holiday .name { font-size: 6.5px; }
+    .tile.holiday .off { font-size: 5.5px; }
+    .tile.summer .icon { font-size: 1.1rem; }
+    .tile.summer .name { font-size: 6.5px; }
+    .tile.active .pin { font-size: .9rem; top: -12px; }
   }
 </style>
 </head>
@@ -222,15 +236,47 @@
     return tiles;
   }
 
-  function tileFor(today, start, end) {
+  const tiles = buildTiles();
+
+  // ---- winding path layout ----
+  const VIEW_W = 640;
+  const MARGIN = 90;
+  const AMP = VIEW_W / 2 - MARGIN;
+  const V_STEP = 86;
+  const H_PAD = 90;
+  const totalH = tiles.length * V_STEP + H_PAD * 2;
+  const CYCLES = 8;
+
+  function sinePoints() {
+    const pts = [];
+    const n = 600;
+    for (let i = 0; i <= n; i++) {
+      const t = i / n;
+      const y = H_PAD + t * (totalH - H_PAD * 2);
+      const x = VIEW_W / 2 + AMP * Math.sin(2 * Math.PI * t * CYCLES);
+      pts.push([x, y]);
+    }
+    return pts;
+  }
+
+  function buildTrail() {
+    const pts = sinePoints();
+    const d = "M " + pts.map(p => p[0].toFixed(1) + " " + p[1].toFixed(1)).join(" L ");
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("viewBox", "0 0 " + VIEW_W + " " + totalH);
+    svg.setAttribute("preserveAspectRatio", "none");
+    svg.classList.add("trail");
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", d);
+    svg.appendChild(path);
+    return { svg, path };
+  }
+
+  function tileFor(today) {
     const k = key(today);
 
-    if (k < YEAR_START) {
-      return { tile: "start", label: "First day!" };
-    }
-    if (k > YEAR_END) {
-      return { tile: "done", label: "Retired!" };
-    }
+    if (k < YEAR_START) return { tile: tiles[0].date, label: "First day!" };
+    if (k > YEAR_END) return { tile: "done", label: "Retired!" };
 
     if (weekday(today) !== 0 && weekday(today) !== 6 && !isHoliday(today)) {
       return { tile: k };
@@ -240,10 +286,8 @@
       if (t.type === "day" && t.date > k) return { tile: t.date, label: "Next up" };
       if (t.type === "holiday" && t.date > k) return { tile: "holiday:" + t.date, label: "Break!" };
     }
-    return { tile: "start", label: "First day!" };
+    return { tile: tiles[0].date, label: "First day!" };
   }
-
-  const tiles = buildTiles();
 
   function render() {
     const today = new Date();
@@ -255,13 +299,26 @@
     countdown.innerHTML = (days > 0 ? days : 0) + " days until summer" +
       (days > 0 ? " <small>Mrs. Davidson's last year before retirement</small>" : " <small>Happy retirement, Mrs. Davidson! 🎉</small>");
 
-    const active = tileFor(today, parse(YEAR_START), target);
+    const active = tileFor(today);
     const map = document.getElementById("map");
     map.innerHTML = "";
 
-    for (const t of tiles) {
+    const { svg, path } = buildTrail();
+    map.appendChild(svg);
+    map.style.aspectRatio = VIEW_W + " / " + totalH;
+    const totalLength = path.getTotalLength();
+
+    for (let i = 0; i < tiles.length; i++) {
+      const t = tiles[i];
+      const p = path.getPointAtLength(totalLength * i / (tiles.length - 1));
+      const rot = ((i * 37) % 21) - 10;
+
       const el = document.createElement("div");
       el.className = "tile";
+      el.style.left = (p.x / VIEW_W * 100) + "%";
+      el.style.top = (p.y / totalH * 100) + "%";
+      el.style.setProperty("--rot", rot + "deg");
+      el.style.transform = "translate(-50%, -50%) rotate(" + rot + "deg)";
 
       if (t.type === "day") {
         const d = parse(t.date);
@@ -276,10 +333,13 @@
           const tag = document.createElement("div");
           tag.className = "mon";
           tag.style.color = "#ffe066";
+          tag.style.fontSize = "0.48rem";
+          tag.style.lineHeight = "1";
+          tag.style.marginTop = "1px";
+          tag.style.whiteSpace = "nowrap";
           tag.textContent = active.label || "Today";
           el.appendChild(tag);
         }
-        if (t.date === YEAR_END) el.title = "Last day of school";
       }
 
       if (t.type === "holiday") {
@@ -295,7 +355,8 @@
 
       if (t.type === "summer") {
         el.classList.add("summer");
-        el.innerHTML = '<span class="icon">☀️</span><span class="name">Summer &amp; Retirement!</span>';
+        el.style.transform = "translate(-50%, -50%) scale(1.2) rotate(2deg)";
+        el.innerHTML = '<span class="icon">☀️</span><span class="name">Summer!</span><span class="name">Retirement</span>';
         if (key(today) > YEAR_END) el.classList.add("active");
       }
 
