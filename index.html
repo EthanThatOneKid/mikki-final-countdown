@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mrs. Davidson's Final Countdown</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: Georgia, serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: linear-gradient(180deg, #ffd166 0%, #f4a261 100%);
+    color: #2b2d42;
+    text-align: center;
+    padding: 20px;
+  }
+  .card {
+    background: rgba(255, 255, 255, 0.92);
+    border-radius: 20px;
+    padding: 48px 56px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    max-width: 640px;
+  }
+  h1 { font-size: 2.2rem; margin-bottom: 12px; }
+  .subtitle { font-size: 1.1rem; font-style: italic; margin-bottom: 32px; color: #555; }
+  .days { font-size: 6rem; font-weight: bold; color: #e63946; line-height: 1; }
+  .days-label { font-size: 1.3rem; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 24px; }
+  .details { font-size: 1rem; color: #555; margin-top: 24px; }
+  .details span { display: block; margin-top: 4px; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>Mrs. Davidson's Final Countdown</h1>
+    <p class="subtitle">Last year before retirement</p>
+    <div class="days" id="days">--</div>
+    <div class="days-label">days until summer</div>
+    <div class="details">
+      <span id="date-text"></span>
+      <span id="message"></span>
+    </div>
+  </div>
+
+<script>
+  const targetDate = new Date("2027-05-25T00:00:00");
+
+  function update() {
+    const now = new Date();
+    const diff = targetDate - now;
+    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+
+    document.getElementById("days").textContent = days > 0 ? days : 0;
+
+    const dateText = "Summer begins: " + targetDate.toLocaleDateString("en-US", {
+      weekday: "long", year: "numeric", month: "long", day: "numeric"
+    });
+    document.getElementById("date-text").textContent = dateText;
+
+    document.getElementById("message").textContent =
+      days > 0
+        ? "You've got this, Mrs. Davidson!"
+        : "Happy retirement, Mrs. Davidson!";
+  }
+
+  update();
+  setInterval(update, 60000);
+</script>
+</body>
+</html>
