@@ -60,95 +60,114 @@
     box-shadow: inset 0 -2px 0 rgba(0,0,0,.2);
   }
 
-  .map {
-    position: relative;
-    margin: 10px auto 40px;
-    width: min(640px, 100%);
-  }
-  .map .trail { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
-  .map .trail path {
-    fill: none;
-    stroke: rgba(255, 217, 61, 0.45);
-    stroke-width: 7;
-    stroke-linecap: round;
-    stroke-dasharray: 2 16;
+  .summary {
+    text-align: center;
+    margin: 8px auto 16px;
+    font-size: .95rem;
+    font-weight: 600;
+    color: #ffe066;
   }
 
-  .tile {
-    position: absolute;
-    width: 58px;
-    height: 58px;
-    border-radius: 14px;
+  .heatmap {
     display: flex;
     flex-direction: column;
+    gap: 24px;
+    width: min(440px, 100%);
+    margin: 0 auto 40px;
+    padding: 0 16px;
+  }
+
+  .month-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+    font-size: .78rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #ffe066;
+  }
+  .month-label::after {
+    content: "";
+    flex: 1;
+    height: 2px;
+    background: rgba(255, 217, 61, 0.25);
+  }
+
+  .month {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 7px;
+  }
+
+  .cell {
+    aspect-ratio: 1;
+    min-width: 0;
+    border-radius: 8px;
+    display: flex;
     align-items: center;
     justify-content: center;
+    font-size: .8rem;
     font-weight: 700;
     color: #fff;
-    text-shadow: 0 2px 3px rgba(0,0,0,.35);
-    box-shadow: inset 0 -5px 0 rgba(0,0,0,.18), 0 5px 10px rgba(0,0,0,.28);
-    overflow: hidden;
+    text-shadow: 0 1px 2px rgba(0,0,0,.35);
+    box-shadow: inset 0 -3px 0 rgba(0,0,0,.15), 0 3px 8px rgba(0,0,0,.22);
     user-select: none;
+    position: relative;
   }
-  .tile .day { font-size: 1.3rem; line-height: 1.1; }
-  .tile .mon { font-size: .58rem; text-transform: uppercase; letter-spacing: 1px; opacity: .9; }
+  .cell.placeholder { background: transparent; box-shadow: none; }
 
-  .tile.cleared {
-    filter: grayscale(.75) brightness(.85);
-    opacity: .5;
+  .cell.done {
+    filter: grayscale(.6) brightness(.62);
+    opacity: .55;
     box-shadow: none;
   }
-  .tile.cleared::after {
-    content: "✓";
-    position: absolute;
-    top: 2px; right: 6px;
-    font-size: .8rem;
-    color: rgba(255,255,255,.9);
-  }
 
-  .tile.active {
+  .cell.today {
+    border: 2px solid #fff;
+    box-shadow: 0 0 18px 4px rgba(255,255,255,.75), inset 0 -3px 0 rgba(0,0,0,.15);
     animation: pulse 1.2s ease-in-out infinite;
-    border: 3px solid #fff;
-    box-shadow: 0 0 24px 6px rgba(255, 255, 255, 0.85);
     z-index: 2;
   }
-  .tile.active .pin { position: absolute; top: -14px; font-size: 1.1rem; }
   @keyframes pulse {
-    0%, 100% { transform: translate(-50%, -50%) scale(1) rotate(var(--rot, 0deg)); }
-    50% { transform: translate(-50%, -50%) scale(1.12) rotate(var(--rot, 0deg)); }
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.09); }
   }
 
-  .tile.holiday {
+  .cell.holiday {
     background: linear-gradient(180deg, #ffd700 0%, #ff9d00 100%);
     color: #6b3d00;
     text-shadow: none;
-    box-shadow: inset 0 -5px 0 rgba(0,0,0,.18), 0 5px 10px rgba(255, 170, 0, .25);
-    gap: 1px;
+    font-size: .95rem;
+    box-shadow: inset 0 -3px 0 rgba(0,0,0,.18), 0 3px 8px rgba(255, 170, 0, .25);
   }
-  .tile.holiday .icon { font-size: 1.35rem; line-height: 1; }
-  .tile.holiday .name { font-size: 8.5px; text-align: center; line-height: 1.15; padding: 0 3px; }
-  .tile.holiday .off { font-size: 7px; text-transform: uppercase; letter-spacing: 1px; opacity: .7; font-weight: 700; }
 
-  .tile.summer {
+  .cell.summer {
+    grid-column: 1 / -1;
+    aspect-ratio: auto;
+    min-height: 46px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    border-radius: 10px;
     background: radial-gradient(circle at 30% 30%, #fff3a0, #ffd93d 45%, #ff9d00);
     color: #7a4a00;
     text-shadow: none;
+    font-size: .85rem;
+    font-weight: 800;
+    letter-spacing: 1px;
     border: 2px solid #fff;
-    box-shadow: 0 0 30px 6px rgba(255, 215, 0, .55), inset 0 -5px 0 rgba(0,0,0,.15);
+    box-shadow: 0 0 30px 6px rgba(255, 215, 0, .5), inset 0 -3px 0 rgba(0,0,0,.15);
   }
-  .tile.summer .icon { font-size: 1.5rem; line-height: 1; }
-  .tile.summer .name { font-size: 8px; text-align: center; line-height: 1.15; padding: 0 3px; }
 
-  @media (max-width: 560px) {
-    .tile { width: 40px; height: 40px; border-radius: 10px; }
-    .tile .day { font-size: .95rem; }
-    .tile .mon { font-size: .45rem; }
-    .tile.holiday .icon { font-size: 1rem; }
-    .tile.holiday .name { font-size: 6.5px; }
-    .tile.holiday .off { font-size: 5.5px; }
-    .tile.summer .icon { font-size: 1.1rem; }
-    .tile.summer .name { font-size: 6.5px; }
-    .tile.active .pin { font-size: .9rem; top: -12px; }
+  @media (max-width: 480px) {
+    .month { gap: 4px; }
+    .cell { border-radius: 6px; font-size: .7rem; }
+    .cell.holiday { font-size: .85rem; }
+    .cell.summer { font-size: .78rem; min-height: 40px; }
   }
 </style>
 </head>
@@ -160,14 +179,16 @@
   </header>
 
   <div class="legend">
-    <span><i class="swatch" style="background:#5c6a72"></i> Cleared</span>
+    <span><i class="swatch" style="background:#5c6a72"></i> Done</span>
     <span><i class="swatch" style="background:#fff; box-shadow:0 0 8px #fff"></i> Today</span>
     <span><i class="swatch" style="background:#4fc3f7"></i> Upcoming</span>
     <span><i class="swatch" style="background:#ffd700"></i> No School</span>
     <span><i class="swatch" style="background:radial-gradient(circle at 30% 30%, #fff3a0, #ffd93d 45%, #ff9d00)"></i> Summer!</span>
   </div>
 
-  <div class="map" id="map"></div>
+  <div class="summary" id="summary">--</div>
+
+  <div class="heatmap" id="map"></div>
 
 <script>
   const YEAR_START = "2026-08-10";
@@ -212,85 +233,57 @@
     return null;
   }
 
-  function buildTiles() {
-    const tiles = [];
+  function buildTimeline() {
+    const items = [];
     const cursor = parse(YEAR_START);
     const end = parse(YEAR_END);
-
     while (cursor <= end) {
       const dow = weekday(cursor);
       if (dow === 0 || dow === 6) { cursor.setUTCDate(cursor.getUTCDate() + 1); continue; }
 
       const h = isHoliday(cursor);
       if (h) {
-        tiles.push({ type: "holiday", name: h.name, icon: h.icon, date: key(cursor) });
-        cursor.setUTCDate(cursor.getUTCDate() + 1);
-        continue;
+        items.push({ type: "holiday", name: h.name, icon: h.icon, date: key(cursor) });
+      } else {
+        items.push({ type: "day", date: key(cursor) });
       }
-
-      tiles.push({ type: "day", date: key(cursor) });
       cursor.setUTCDate(cursor.getUTCDate() + 1);
     }
-
-    tiles.push({ type: "summer", icon: "☀️" });
-    return tiles;
+    return items;
   }
 
-  const tiles = buildTiles();
+  const timeline = buildTimeline();
 
-  // ---- winding path layout ----
-  const VIEW_W = 640;
-  const MARGIN = 90;
-  const AMP = VIEW_W / 2 - MARGIN;
-  const V_STEP = 86;
-  const H_PAD = 90;
-  const totalH = tiles.length * V_STEP + H_PAD * 2;
-  const CYCLES = 8;
-
-  function sinePoints() {
-    const pts = [];
-    const n = 600;
-    for (let i = 0; i <= n; i++) {
-      const t = i / n;
-      const y = H_PAD + t * (totalH - H_PAD * 2);
-      const x = VIEW_W / 2 + AMP * Math.sin(2 * Math.PI * t * CYCLES);
-      pts.push([x, y]);
+  function buildMonths() {
+    const months = [];
+    for (const it of timeline) {
+      const idx = parse(it.date).getUTCMonth();
+      let m = months[months.length - 1];
+      if (!m || m.index !== idx) {
+        m = { index: idx, name: MONTHS[idx], items: [] };
+        months.push(m);
+      }
+      m.items.push(it);
     }
-    return pts;
+    months[months.length - 1].items.push({ type: "summer" });
+    return months;
   }
 
-  function buildTrail() {
-    const pts = sinePoints();
-    const d = "M " + pts.map(p => p[0].toFixed(1) + " " + p[1].toFixed(1)).join(" L ");
-    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg.setAttribute("viewBox", "0 0 " + VIEW_W + " " + totalH);
-    svg.setAttribute("preserveAspectRatio", "none");
-    svg.classList.add("trail");
-    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    path.setAttribute("d", d);
-    svg.appendChild(path);
-    return { svg, path };
-  }
+  const months = buildMonths();
 
-  function tileFor(today) {
-    const k = key(today);
-
-    if (k < YEAR_START) return { tile: tiles[0].date, label: "First day!" };
-    if (k > YEAR_END) return { tile: "done", label: "Retired!" };
-
-    if (weekday(today) !== 0 && weekday(today) !== 6 && !isHoliday(today)) {
-      return { tile: k };
+  function progress(todayKey) {
+    let total = 0, done = 0;
+    for (const it of timeline) {
+      if (it.type !== "day") continue;
+      total++;
+      if (it.date < todayKey) done++;
     }
-
-    for (const t of tiles) {
-      if (t.type === "day" && t.date > k) return { tile: t.date, label: "Next up" };
-      if (t.type === "holiday" && t.date > k) return { tile: "holiday:" + t.date, label: "Break!" };
-    }
-    return { tile: tiles[0].date, label: "First day!" };
+    return { total, done, left: total - done };
   }
 
   function render() {
     const today = new Date();
+    const todayKey = key(today);
     const target = parse(YEAR_END);
 
     const countdown = document.getElementById("countdown");
@@ -299,72 +292,77 @@
     countdown.innerHTML = (days > 0 ? days : 0) + " days until summer" +
       (days > 0 ? " <small>Mrs. Davidson's last year before retirement</small>" : " <small>Happy retirement, Mrs. Davidson! 🎉</small>");
 
-    const active = tileFor(today);
+    const p = progress(todayKey);
+    document.getElementById("summary").textContent =
+      p.done + " of " + p.total + " school days done · " + p.left + " left";
+
     const map = document.getElementById("map");
     map.innerHTML = "";
 
-    const { svg, path } = buildTrail();
-    map.appendChild(svg);
-    map.style.aspectRatio = VIEW_W + " / " + totalH;
-    const totalLength = path.getTotalLength();
+    for (const m of months) {
+      const block = document.createElement("div");
+      block.className = "month-block";
 
-    for (let i = 0; i < tiles.length; i++) {
-      const t = tiles[i];
-      const p = path.getPointAtLength(totalLength * i / (tiles.length - 1));
-      const rot = ((i * 37) % 21) - 10;
+      const label = document.createElement("div");
+      label.className = "month-label";
+      label.textContent = m.name;
+      block.appendChild(label);
 
-      const el = document.createElement("div");
-      el.className = "tile";
-      el.style.left = (p.x / VIEW_W * 100) + "%";
-      el.style.top = (p.y / totalH * 100) + "%";
-      el.style.setProperty("--rot", rot + "deg");
-      el.style.transform = "translate(-50%, -50%) rotate(" + rot + "deg)";
+      const grid = document.createElement("div");
+      grid.className = "month";
+      block.appendChild(grid);
 
-      if (t.type === "day") {
-        const d = parse(t.date);
-        const [r, g] = MONTH_COLORS[d.getUTCMonth() + 1];
-        el.style.background = "linear-gradient(180deg, " + r + " 0%, " + g + " 100%)";
-        el.innerHTML = '<div class="day">' + d.getUTCDate() + '</div><div class="mon">' + MONTHS[d.getUTCMonth()] + '</div>';
+      const pad = weekday(parse(m.items[0].date)) - 1;
+      for (let i = 0; i < pad; i++) {
+        const ph = document.createElement("div");
+        ph.className = "cell placeholder";
+        grid.appendChild(ph);
+      }
 
-        if (t.date < key(today)) el.classList.add("cleared");
-        if (t.date === active.tile) {
-          el.classList.add("active");
-          el.innerHTML = '<span class="pin">📍</span>' + el.innerHTML;
-          const tag = document.createElement("div");
-          tag.className = "mon";
-          tag.style.color = "#ffe066";
-          tag.style.fontSize = "0.48rem";
-          tag.style.lineHeight = "1";
-          tag.style.marginTop = "1px";
-          tag.style.whiteSpace = "nowrap";
-          tag.textContent = active.label || "Today";
-          el.appendChild(tag);
+      for (const it of m.items) {
+        if (it.type === "summer") {
+          const el = document.createElement("div");
+          el.className = "cell summer";
+          el.innerHTML = "☀️ Summer! · Retirement";
+          grid.appendChild(el);
+          continue;
         }
-      }
 
-      if (t.type === "holiday") {
-        el.classList.add("holiday");
-        el.innerHTML = '<span class="icon">' + t.icon + '</span><span class="name">' + t.name + '</span><span class="off">No school</span>';
-        el.title = t.name + " · " + t.date;
-        if (t.date < key(today)) el.classList.add("cleared");
-        if (t.date === (active.tile && active.tile.split(":")[1])) {
-          el.classList.add("active");
-          el.innerHTML = '<span class="pin">📍</span>' + el.innerHTML;
+        const el = document.createElement("div");
+        el.className = "cell";
+        const d = parse(it.date);
+
+        if (it.type === "holiday") {
+          el.classList.add("holiday");
+          el.innerHTML = it.icon;
+          el.title = it.name + " · " + it.date;
+        } else {
+          const [r, g] = MONTH_COLORS[d.getUTCMonth() + 1];
+          el.style.background = "linear-gradient(180deg, " + r + " 0%, " + g + " 100%)";
+          el.textContent = d.getUTCDate();
+          el.title = MONTHS[d.getUTCMonth()] + " " + d.getUTCDate();
         }
+
+        if (it.date < todayKey) el.classList.add("done");
+        if (it.date === todayKey) {
+          el.classList.add("today");
+          el.title = (it.type === "holiday" ? it.name + " · " : "Today · ") + it.date;
+        }
+        grid.appendChild(el);
       }
 
-      if (t.type === "summer") {
-        el.classList.add("summer");
-        el.style.transform = "translate(-50%, -50%) scale(1.2) rotate(2deg)";
-        el.innerHTML = '<span class="icon">☀️</span><span class="name">Summer!</span><span class="name">Retirement</span>';
-        if (key(today) > YEAR_END) el.classList.add("active");
+      const tail = grid.children.length % 5;
+      for (let i = 0; i < (tail ? 5 - tail : 0); i++) {
+        const ph = document.createElement("div");
+        ph.className = "cell placeholder";
+        grid.appendChild(ph);
       }
 
-      map.appendChild(el);
+      map.appendChild(block);
     }
 
-    const activeEl = map.querySelector(".tile.active");
-    if (activeEl) activeEl.scrollIntoView({ block: "center" });
+    const active = map.querySelector(".cell.today");
+    if (active) active.scrollIntoView({ block: "center" });
   }
 
   render();
