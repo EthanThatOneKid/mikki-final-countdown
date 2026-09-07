@@ -291,9 +291,12 @@
 
     const countdown = document.getElementById("countdown");
     const diff = target - today;
-    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-    countdown.innerHTML = (days > 0 ? days : 0) + " days until summer" +
-      (days > 0 ? " <small>Mrs. Davidson's last year before retirement</small>" : " <small>Happy retirement, Mrs. Davidson! 🎉</small>");
+    const DAY_MS = 1000 * 60 * 60 * 24;
+    const totalDays = Math.ceil((target - parse(YEAR_START)) / DAY_MS);
+    const remaining = Math.max(0, Math.ceil(diff / DAY_MS));
+    const down = Math.max(0, totalDays - remaining);
+    countdown.innerHTML = down + " days down, " + remaining + " days until summer" +
+      (remaining > 0 ? " <small>Mrs. Davidson's last year before retirement</small>" : " <small>Happy retirement, Mrs. Davidson! 🎉</small>");
 
     const p = progress(todayKey);
     document.getElementById("summary").textContent =
