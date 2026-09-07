@@ -139,9 +139,12 @@
     background: linear-gradient(180deg, #ffd700 0%, #ff9d00 100%);
     color: #6b3d00;
     text-shadow: none;
-    font-size: .95rem;
+    flex-direction: column;
+    gap: 1px;
     box-shadow: inset 0 -3px 0 rgba(0,0,0,.18), 0 3px 8px rgba(255, 170, 0, .25);
   }
+  .cell.holiday .hic { font-size: .8rem; line-height: 1; }
+  .cell.holiday .hday { font-size: .95rem; line-height: 1; font-weight: 800; }
 
   .cell.summer {
     grid-column: 1 / -1;
@@ -166,7 +169,8 @@
   @media (max-width: 480px) {
     .month { gap: 4px; }
     .cell { border-radius: 6px; font-size: .7rem; }
-    .cell.holiday { font-size: .85rem; }
+    .cell.holiday .hic { font-size: .72rem; }
+    .cell.holiday .hday { font-size: .85rem; }
     .cell.summer { font-size: .78rem; min-height: 40px; }
   }
 </style>
@@ -334,7 +338,7 @@
 
         if (it.type === "holiday") {
           el.classList.add("holiday");
-          el.innerHTML = it.icon;
+          el.innerHTML = '<span class="hic">' + it.icon + '</span><span class="hday">' + d.getUTCDate() + '</span>';
           el.title = it.name + " · " + it.date;
         } else {
           const [r, g] = MONTH_COLORS[d.getUTCMonth() + 1];
